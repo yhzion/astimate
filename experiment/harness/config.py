@@ -36,7 +36,32 @@ _load_dotenv()
 ENDPOINT = os.environ.get("ASTIMATE_LLM_ENDPOINT", "https://llm-proxy.datamaker.io")
 API_KEY = os.environ.get("ASTIMATE_LLM_API_KEY", "")
 MODEL = os.environ.get("ASTIMATE_LLM_MODEL", "bunker-flash")
-CHAT_URL = ENDPOINT.rstrip("/") + "/v1/chat/completions"
+# Build chat URL. If the endpoint already ends in a version segment
+# (e.g. .../paas/v4), append /chat/completions directly; otherwise insert
+# /v1 (OpenAI convention, used by e.g. vLLM proxies ending in a bare host).
+import re as _re
+_ep = ENDPOINT.rstrip("/")
+CHAT_URL = (_ep + "/chat/completions") if _re.search(r"/v\d+$", _ep) else (_ep + "/v1/chat/completions")
+
+
+# Thinking control is model-specific:
+#   - vLLM-backed Qwen (bunker-flash): chat_template_kwargs.enable_thinking
+#   - z.ai GLM-5.x: reasoning_effort ("minimal" disables reasoning cleanly)
+_THINKING_OFF = {
+    "bunker-flash": {"chat_template_kwargs": {"enable_thinking": False}},
+    "glm-5.2": {"reasoning_effort": "minimal"},
+    "glm-5.1": {"reasoning_effort": "minimal"},
+    "glm-5": {"reasoning_effort": "minimal"},
+}
+
+
+def thinking_extra(thinking: bool) -> dict:
+    """Extra payload fields for the configured model's thinking mode.
+    thinking=False -> reasoning OFF (clean token signal for H6).
+    thinking=True  -> model default (omitted)."""
+    if thinking:
+        return {}
+    return _THINKING_OFF.get(MODEL, {})
 
 # Agent loop limits (thinking OFF keeps each turn cheap)
 MAX_STEPS = 20

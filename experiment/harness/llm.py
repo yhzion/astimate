@@ -63,8 +63,10 @@ def chat(messages: list[dict], tools: list[dict] | None = None,
         "messages": messages,
         "temperature": config.TEMPERATURE,
         "max_tokens": config.PER_TURN_MAX_TOKENS,
-        "chat_template_kwargs": {"enable_thinking": thinking},
     }
+    # Thinking control is model-specific. bunker-flash (vLLM) uses
+    # chat_template_kwargs.enable_thinking; GLM-5.x uses reasoning_effort.
+    payload.update(config.thinking_extra(thinking))
     if tools:
         payload["tools"] = tools
         if force_tool:
