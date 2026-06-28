@@ -8,6 +8,8 @@ results/*
 !results/.gitkeep
 experiment/harness/data/
 experiment/.astimate/
+__pycache__/
+*.pyc
 
 # Secrets
 .env
