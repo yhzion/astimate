@@ -1,0 +1,13 @@
+addr,kind,purpose,tags
+ignore::walk::WalkBuilder,struct,Builder that configures and constructs recursive directory walkers with gitignore/type filtering and parallelism options,walk|builder|directory|iterator|filter
+ignore::walk::WalkBuilder::build_parallel,fn,Build a parallel directory walker that distributes traversal across a thread pool and drives a visitor via callbacks,walk|parallel|threads|build
+searcher::sink::Sink,trait,Trait implemented by consumers to receive search matches context and lifecycle events from the searcher,sink|trait|consumer|callback|match
+searcher::sink::Sink::matched,fn,Called by the searcher for each match delivering the matched bytes surrounding lines and offsets to the sink,sink|matched|callback|match
+ignore::walk::WalkParallel::run,fn,Entry point that spawns worker threads and runs the parallel directory walk invoking the visitor builder per thread,walk|parallel|run|entry|threads
+printer::standard::Standard,struct,Printer that writes grep-style search results to a writer with optional colors paths and match formatting,printer|standard|color|output|format
+ignore::gitignore::GitignoreBuilder::build_global,fn,Collect the user's global gitignore sources core excludesFile and config ignores and merge them into one Gitignore matcher,gitignore|global|build|merge|config
+ignore::types::TypesBuilder::add,fn,Register a file-type definition by adding a glob pattern under a named type in the builder,types|add|glob|register|type
+ignore::types::TypesBuilder::select,fn,Activate a named file type so built Types only matches paths belonging to that type,types|select|activate|type
+searcher::searcher::Searcher::search_reader,fn,Stream a search over any Read source line by line dispatching matches to a Sink without memory mapping,search|reader|stream|sink|entry
+searcher::searcher::Searcher,struct,Streaming regex search engine that drives a matcher over files readers or byte slices and reports results via a Sink,searcher|engine|search|sink|struct
+ignore::gitignore::Gitignore::matched,fn,Test whether a path is ignored or whitelisted returning the matched glob and match kind,gitignore|matched|test|path

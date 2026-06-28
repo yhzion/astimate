@@ -44,7 +44,7 @@ question = "Where is the `Sink` trait defined, and what is the signature of the 
   [[task.expected]]
   symbol = "searcher::sink::Sink::matched"
   file = "ripgrep_crates/searcher/src/sink.rs"
-  loc = [124, 149]
+  loc = [124, 128]
   kind = "fn"
 
 [[task]]
@@ -123,7 +123,7 @@ question = "When the searcher finds a match, which method on the consumer's `Sin
   [[task.expected]]
   symbol = "searcher::sink::Sink::matched"
   file = "ripgrep_crates/searcher/src/sink.rs"
-  loc = [124, 149]
+  loc = [124, 128]
   kind = "fn"
 
 [[task]]

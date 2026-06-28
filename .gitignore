@@ -1,13 +1,18 @@
-# Secrets — NEVER commit API keys
-.env
-.env.*
-!.env.example
-
-# astimate's own experimental build artifacts
-target/
+[target/]
 *.db
 *.db-wal
 *.db-shm
+
+# Experiment outputs (regenerable)
+results/*
+!results/.gitkeep
+experiment/harness/data/
+experiment/.astimate/
+
+# Secrets
+.env
+.env.*
+!.env.example
 
 # OS / editor
 .DS_Store
