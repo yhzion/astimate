@@ -1,0 +1,149 @@
+# H6 experiment task set
+#
+# 10 tasks across 5 types. Ground truth is FROZEN (verified against the pinned
+# ripgrep fixture at commit dfe4a81d...). Line numbers are 1-indexed, inclusive.
+#
+# type:
+#   A = pure structure   (LSP-strong baseline floor)
+#   B = pure semantic    (RAG-strong baseline floor)
+#   C = structure+semantic combo (H6 gap)
+#   D = dependency context, multi-symbol (H6 gap)
+#   E = precise loc slicing (astimate strength)
+#
+# Each [[task.expected]] = one symbol the verified answer must identify.
+# Accuracy = all expected symbols matched (by addr) AND loc overlap >= 50%.
+
+[[task]]
+id = "A1"
+type = "A"
+question = "Where is the `WalkBuilder` struct defined, and what is the exact signature of the method that builds a *parallel* directory walker? Give the struct location and the method signature."
+
+  [[task.expected]]
+  symbol = "ignore::walk::WalkBuilder"
+  file = "ripgrep_crates/ignore/src/walk.rs"
+  loc = [483, 507]
+  kind = "struct"
+
+  [[task.expected]]
+  symbol = "ignore::walk::WalkBuilder::build_parallel"
+  file = "ripgrep_crates/ignore/src/walk.rs"
+  loc = [625, 642]
+  kind = "fn"
+
+[[task]]
+id = "A2"
+type = "A"
+question = "Where is the `Sink` trait defined, and what is the signature of the `matched` method that a sink must implement to receive matched results?"
+
+  [[task.expected]]
+  symbol = "searcher::sink::Sink"
+  file = "ripgrep_crates/searcher/src/sink.rs"
+  loc = [102, 339]
+  kind = "trait"
+
+  [[task.expected]]
+  symbol = "searcher::sink::Sink::matched"
+  file = "ripgrep_crates/searcher/src/sink.rs"
+  loc = [124, 149]
+  kind = "fn"
+
+[[task]]
+id = "B1"
+type = "B"
+question = "Find the entry point method that walks the directory tree in parallel across multiple threads."
+
+  [[task.expected]]
+  symbol = "ignore::walk::WalkParallel::run"
+  file = "ripgrep_crates/ignore/src/walk.rs"
+  loc = [1331, 1336]
+  kind = "fn"
+
+[[task]]
+id = "B2"
+type = "B"
+question = "Find the main printer component that formats search matches to the terminal with color (and optional hyperlinks)."
+
+  [[task.expected]]
+  symbol = "printer::standard::Standard"
+  file = "ripgrep_crates/printer/src/standard.rs"
+  loc = [480, 484]
+  kind = "struct"
+
+[[task]]
+id = "C1"
+type = "C"
+question = "Find the logic that collects the *user's global* ignore rules (core.excludesFile, ~/.config/git/ignore, etc.) and merges them into a single ignore matcher."
+
+  [[task.expected]]
+  symbol = "ignore::gitignore::GitignoreBuilder::build_global"
+  file = "ripgrep_crates/ignore/src/gitignore.rs"
+  loc = [364, 383]
+  kind = "fn"
+
+[[task]]
+id = "C2"
+type = "C"
+question = "File-type definitions in ripgrep are registered by glob and then a specific type is activated. Identify BOTH the builder method that adds a (name, glob) definition AND the method that selects/activates a named type."
+
+  [[task.expected]]
+  symbol = "ignore::types::TypesBuilder::add"
+  file = "ripgrep_crates/ignore/src/types.rs"
+  loc = [417, 431]
+  kind = "fn"
+
+  [[task.expected]]
+  symbol = "ignore::types::TypesBuilder::select"
+  file = "ripgrep_crates/ignore/src/types.rs"
+  loc = [381, 390]
+  kind = "fn"
+
+[[task]]
+id = "C3"
+type = "C"
+question = "Rather than mmap, find the entry point that streams a search over any `Read` source and dispatches matches to a `Sink`."
+
+  [[task.expected]]
+  symbol = "searcher::searcher::Searcher::search_reader"
+  file = "ripgrep_crates/searcher/src/searcher/mod.rs"
+  loc = [727, 765]
+  kind = "fn"
+
+[[task]]
+id = "D1"
+type = "D"
+question = "When the searcher finds a match, which method on the consumer's `Sink` does it call to deliver the match? Identify the call site (on the searcher side) AND the sink method being invoked."
+
+  [[task.expected]]
+  symbol = "searcher::searcher::Searcher"
+  file = "ripgrep_crates/searcher/src/searcher/mod.rs"
+  loc = [833, 1035]
+  kind = "impl"
+  note = "the impl block that drives matching and calls Sink::matched"
+
+  [[task.expected]]
+  symbol = "searcher::sink::Sink::matched"
+  file = "ripgrep_crates/searcher/src/sink.rs"
+  loc = [124, 149]
+  kind = "fn"
+
+[[task]]
+id = "D2"
+type = "D"
+question = "`Gitignore::matched` decides whether a path is ignored. Identify this method AND the data/structure it relies on internally to express the match result (the match enum / inner representation)."
+
+  [[task.expected]]
+  symbol = "ignore::gitignore::Gitignore::matched"
+  file = "ripgrep_crates/ignore/src/gitignore.rs"
+  loc = [191, 200]
+  kind = "fn"
+
+[[task]]
+id = "E1"
+type = "E"
+question = "Give the exact line range (start and end) of the `Searcher` struct definition including all its fields."
+
+  [[task.expected]]
+  symbol = "searcher::searcher::Searcher"
+  file = "ripgrep_crates/searcher/src/searcher/mod.rs"
+  loc = [597, 625]
+  kind = "struct"

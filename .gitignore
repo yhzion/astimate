@@ -1,0 +1,16 @@
+# Secrets — NEVER commit API keys
+.env
+.env.*
+!.env.example
+
+# astimate's own experimental build artifacts
+target/
+*.db
+*.db-wal
+*.db-shm
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
