@@ -52,6 +52,15 @@ def _user_prompt(task: Task) -> str:
     return f"Question: {task.question}\n\nAnswer via the `done` tool."
 
 
+def _tool_sig(name: str, args: dict) -> str:
+    """Stable signature of a tool call for loop detection."""
+    norm = []
+    for k in sorted(args):
+        v = str(args[k]).strip()
+        norm.append(f"{k}={v[:60]}")
+    return f"{name}({','.join(norm)})"
+
+
 def run(task: Task, condition: str, repeat: int) -> RunResult:
     res = RunResult(task_id=task.id, condition=condition, repeat=repeat, status="error")
     t0 = time.time()
@@ -62,6 +71,8 @@ def run(task: Task, condition: str, repeat: int) -> RunResult:
         {"role": "user", "content": _user_prompt(task)},
     ]
     text_nudges = 0
+    loop_nudges = 0
+    recent_sigs: list[str] = []          # last N tool-call signatures (loop detector)
 
     try:
         for step in range(config.MAX_STEPS):
@@ -117,9 +128,28 @@ def run(task: Task, condition: str, repeat: int) -> RunResult:
             messages.append(assistant_msg)
 
             done_called = False
+            loop_break = False
             for tc in tr.tool_calls:
                 res.tool_calls.append(tc["name"])
                 args = tools.parse_args(tc["arguments"])
+
+                # --- loop detection: same call signature 3x within last 4 calls ---
+                sig = _tool_sig(tc["name"], args)
+                recent_sigs.append(sig)
+                window = recent_sigs[-4:]
+                if len(window) >= 3 and window.count(sig) >= 3 and loop_nudges == 0:
+                    loop_nudges += 1
+                    messages.append({
+                        "role": "user",
+                        "content": (
+                            "You are repeating the same tool call. Stop searching and submit "
+                            "your best answer NOW by calling the `done` tool with the symbols, "
+                            "files and line ranges you have found so far."
+                        ),
+                    })
+                    loop_break = True
+                    break
+
                 try:
                     out = tools.dispatch(tc["name"], args)
                     messages.append({
@@ -133,6 +163,9 @@ def run(task: Task, condition: str, repeat: int) -> RunResult:
                     break
             if done_called:
                 break
+            if loop_break:
+                # Injected a loop nudge; continue the loop (next turn should call done).
+                continue
         else:
             res.status = "cap_steps"
     except llm.LLMError as e:
